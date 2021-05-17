@@ -1,0 +1,1 @@
+# Amostra de Script
