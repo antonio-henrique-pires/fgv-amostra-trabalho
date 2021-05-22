@@ -147,11 +147,12 @@ top_topics_ano %>%
 
 # Membros que mais participaram no CSNU
 
-Os membros do CSNU, mesmo que ocupem assentos, não são obrigados a fazer pronunciamentos durante as reuniões, de modo que há variação no nível de engajamento nos debates. Nesta seção, avaliamos o nível de participação dos membros levando em conta o número de discursos proferidos em capacidade nacional ou em nome de órgão da ONU, excluindo discursos protocolares. No gráfico \@ref(fig:top-disc), podemos visualizar os membros que mais discursaram no CSNU entre 1995 e 2019: 
+Os membros do CSNU, mesmo que ocupem assentos, não são obrigados a fazer pronunciamentos durante as reuniões, de modo que há variação no nível de engajamento nos debates. Nesta seção, avaliamos o nível de participação dos membros a partir do número de discursos proferidos em capacidade nacional ou em nome de órgão da ONU. Não levamos em conta, portanto, discursos proferidos na condição de Presidente do Conselho com conteúdos protocolares, do tipo "passo agora a palavra ao representante X", ou que apresentam "Declarações Presidenciais", que representam todo o Conselho, em vez de um ator específico. No gráfico \@ref(fig:top-disc), podemos visualizar os membros que mais discursaram no CSNU entre 1995 e 2019: 
 
 ```{r top-disc, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Membros que mais discursaram", fig.topcaption=TRUE}
 
-# remover discursos não feitos em capacidade nacional
+# remover discursos não feitos em capacidade nacional 
+# ou em nome de órgão da ONU
 unsc_nat <- unsc_full_filt %>% 
    filter(!(participanttype == "The President" &
               !filename %in% c(un_capacities_speeches,

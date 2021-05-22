@@ -16,24 +16,26 @@ unsc_full_filt <- unsc_full %>%
          topics = ifelse(agenda_item3 == "Thematic", agenda_item2, agenda_item3)) %>% #* coluna com os tópicos em detalhes (obs2)
   tibble()
 
-#*(obs1) Os encontros no CSNU podem durar muito tempo e por isso divididos em partes. 
-# Por isso, um mesmo encontro pode ter diferentes nomenclaturas, como 7285 e 7285Resumption
-# Para contar contabilizar corretamente o número de encontros, mantemos apenas a indicação dos números
+#*(obs1) Os encontros no CSNU podem durar muito tempo e por isso são divididos em partes. 
+# Um mesmo encontro pode ter diferentes nomenclaturas, como 7285 e 7285Resumption
+# Para contabilizar corretamente o número de encontros, mantemos apenas a indicação dos números
 
 #*(obs2) A coluna agenda_item3 contém os tópicos dos encontros, priorizando os tópicos que versaram sobre regiões geográficas específicas,
 # mantendo o restante como "temático". A coluna agenda_item2 contém detalhes sobre o conteúdo de encontros temáticos.
-# Reunimos as duas informações para identificar os tópicos mais debatidos com o maior nível de detalhe
+# Reunimos as duas informações para identificar os tópicos mais debatidos com o maior nível de detalhe possível
 
 #### Filtrar discursos para manter apenas discursos feitos em capacidade nacional*(obs3) ####
 
 #*(obs3) Os membros nem sempre discursam em nome dos países que representam.
 # Quando ocupam a posição de Presidente, eles podem proferir discursos meramente protocolares, como "passo a palavra ao representante X",
-# além de discursar condição de membro de algum órgão subsidiário da ONU. 
-# Por isso, para calcular o número de discursos por país, precisamos manter apenas os discursos presidenciais proferidos em capacidade nacional.
+# discursos em nome de todo o Conselho, chamados de "Declarações Presidenciais", além de pronunciamentos em capacidade nacional ou
+# representando algum órgão da ONU. 
+# Para calcular o número de discursos por país, precisamos manter apenas os discursos presidenciais proferidos em capacidade nacional ou
+# em nome de órgão da ONU, uma vez que representam entes específicos.
 
-# Os arquivos "un_capacities_speeches" e "national_capacities_filenames" possuem os códigos de todos os discursos proferidos
-# em capacidade nacional ou enquanto funcionário da ONU
-# Por ser uma etapa simples, este código poderá ser rodado no RMD
+# Os arquivos "un_capacities_speeches" e "national_capacities_filenames" possuem os códigos de todos os discursos proferidos por Presidentes
+# do Conselho em capacidade nacional ou enquanto funcionário da ONU
+# Por ser uma etapa simples, este código poderá ser rodado direto no RMD
 
 #load(here("data/un_capacities_speeches.RData"))
 #load(here("data/national_capacities_filenames.RData"))
@@ -87,6 +89,7 @@ unsc_full_filt <- unsc_full_filt %>%
                          "Syria" = "Síria",
                          "Terrorism" = "Terrorismo"))
 
-# Salvar base de dados filtrada
+#### Salvar base de dados filtrada ####
+
 #save(unsc_full_filt, file = here("data/unsc_full_filt.RData"))
 
