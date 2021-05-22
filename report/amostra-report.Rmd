@@ -24,20 +24,17 @@ link-citations: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = TRUE, fig.pos = 'H')
 ```
 
 # Apresentação do Projeto
 
-Este relatório é resultado de um projeto que analisa a atividade do Conselho de Segurança das Nações Unidas (CSNU), a partir da base de dados "UN Security Council Debates", disponível no _Harvard Dataverse_^[Disponível em: [https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH). Acesso em: 20 de maio de 2021. Uma versão atualizada do banco de dados está disponível em: [https://osf.io/2x38t/](https://osf.io/2x38t/). Acesso em: 20 de maio de 2021.], que contém 77.857 discursos proferidos no CSNU entre 1995 e 2019. Este trabalho está estruturado no formato de projeto do R, com controle de versão a partir de [repositório no Github](https://github.com/antonio-henrique-pires/fgv-amostra-trabalho). Neste formato, dedica-se um local específico para armazenar os arquivos e os _scripts_ necessários para produção dos resultados. Este projeto, por exemplo, possui uma pasta "data", com a base de dados em formato .RData, uma pasta "_scripts_", com registro dos códigos utilizados na análise de dados, e, por fim, uma pasta "report", com um arquivo .RMD para gerar o presente relatório em PDF, onde é possível visualizar os códigos que geraram as análises. Caso fosse desejável visualizar apenas os textos e os gráficos, bastaria modificar o parâmetro dos _chunks_ para `echo = TRUE`. Dessa forma, temos como processar e registrar, portanto, em um só local, a preparação dos dados, a análise dos dados e a apresentação dos resultados. O controle de versão em repositório no Github garante a transparência e a replicabilidade, uma vez que permite o acesso de outras pessoas aos arquivos e registros necessários para a realização das análises. 
+Este relatório é resultado de um projeto estruturado no R que analisa a atividade do Conselho de Segurança das Nações Unidas (CSNU), a partir da base de dados "_UN Security Council Debates_", disponível no _Harvard Dataverse_^[Disponível em: [https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH). Acesso em: 20 de maio de 2021. Uma versão atualizada do banco de dados está disponível em: [https://osf.io/2x38t/](https://osf.io/2x38t/). Acesso em: 20 de maio de 2021.], que contém 77.857 discursos proferidos no CSNU entre 1995 e 2019. A pasta raiz do projeto possui uma pasta "_data_", com a base de dados em formato .RData, uma pasta "_scripts_", com registro dos códigos utilizados na análise de dados, e, por fim, uma pasta "_report_", com um arquivo .RMD para gerar o presente relatório em PDF, onde é possível visualizar os códigos que geraram as análises. Caso fosse desejável visualizar apenas os textos e os gráficos, bastaria modificar o parâmetro dos _chunks_ para `echo = FALSE`. Dessa forma, temos como processar e registrar, em um só local, a preparação e análise dos dados e a apresentação dos resultados. O controle de versão em [repositório no Github](https://github.com/antonio-henrique-pires/fgv-amostra-trabalho) garante a transparência e a replicabilidade, uma vez que permite o acesso de outras pessoas aos arquivos e registros necessários para a realização das análises. 
 
-# A atividade do Conselho de Segurança das Nações Unidas
+Tema central deste projeto, o CSNU é formado por representantes de 15 países, sendo 5 membros permanentes (China, França, Rússia, Reino Unido e Estados Unidos) e 10 eleitos para mandatos de 2 anos, que se reúnem para discutir assuntos relativos à manutenção da paz e da segurança internacional. Neste relatório, analisamos a frequência de encontros realizados pelo CSNU ao longo do tempo, quais os assuntos e as crises internacionais que mais foram objeto de reuniões e, por fim, identificamos quais os membros que mais discursaram no CSNU.
 
-O CSNU é formado por representantes de 15 países, sendo 5 membros permanentes (China, França, Rússia, Reino Unido e Estados Unidos) e 10 eleitos para mandatos de 2 anos, que se reúnem para discutir assuntos relativos à manutenção da paz e da segurança internacional. Neste relatório, analisamos a frequência de encontros realizados pelo CSNU ao longo do tempo, quais os assuntos e as crises internacionais que mais foram objeto de reuniões e, por fim, identificar quais os membros que mais discursaram no CSNU.
-
-```{r pck-data, echo=F, warning=FALSE, message=FALSE}
-
+```{r pck-data, warning=FALSE, message=FALSE}
+# Pacotes para análise e visualização
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -56,23 +53,25 @@ load(here("data/national_capacities_filenames.RData"))
 
 ```
 
-## Frequência de encontros
+# Frequência de encontros
 
 Os encontros do CSNU podem ser convocados a qualquer tempo, sem limite mínimo ou máximo. No gráfico \@ref(fig:encontros-semestre), podemos visualizar a evolução no número de encontros realizados pelo CSNU a partir de 1995, considerando intervalos semestrais, para maior detalhamento:
 
-```{r encontros-semestre, echo=F, fig.align='center', warning=FALSE, message=FALSE, fig.cap="Número de Encontros no CSNU (1995-2019)", fig.topcaption=TRUE}
+```{r encontros-semestre, fig.align='center', warning=FALSE, message=FALSE, fig.cap="Número de Encontros no CSNU (1995-2019)", fig.topcaption=TRUE}
 
-# Número de Encontros
-
+# Objeto em que cada linha é um encontro
 meet_semesters <- unsc_full_filt %>% 
-  select(date, spv) %>% # seleção das variáveis necessárias
-  unique() %>% # remoção das duplicatas
-  mutate(semesters = as.character(semester(date, with_year = TRUE))) %>% # conversão para semestres
+  select(date, spv) %>% # encontros e suas datas
+  unique() %>% # remover duplicatas
+  mutate(semesters = as.character(semester(date, with_year = TRUE))) %>%
+  # conversão para semestres
   group_by(semesters) %>% 
-  summarise(meetings = n()) # número de encontros por semestre
+  summarise(meetings = n()) %>%  # número de encontros por semestre
+  arrange(desc(meetings))
 
+# plot da evolução do número de encontros
 meet_semesters %>% 
-  ggplot(aes(semesters, meetings, group = 1)) + # plot da evolução do número de encontros
+  ggplot(aes(semesters, meetings, group = 1)) + 
   geom_line() +
   labs(x = NULL,
        y = NULL) +
@@ -82,25 +81,25 @@ meet_semesters %>%
                                    hjust = 1,
                                    vjust = 1))
 
-
 ```
 
-Podemos notar que o CSNU se tornou cada vez mais ativo ao longo do tempo. Nota-se uma primeira ascensão do número de encontros entre 1995 e 2003, com uma estabilização entre 2004 e 2010, e uma nova subida a partir de 2011. Durante todo o período analisado, o semestre com mais encontros foi o `r meet_semesters$semesters[which(meet_semesters$meetings == max(meet_semesters$meetings))]`, com `r max(meet_semesters$meetings)` encontros, e o com menos encontros foram `r meet_semesters$semesters[which(meet_semesters$meetings == min(meet_semesters$meetings))][1]` e `r meet_semesters$semesters[which(meet_semesters$meetings == min(meet_semesters$meetings))][2]`, ambos com `r min(meet_semesters$meetings)` encontros.
+Podemos notar que o CSNU se tornou cada vez mais ativo ao longo do tempo. Nota-se uma primeira ascensão do número de encontros entre 1995 e 2003, com uma estabilização entre 2004 e 2010, e uma nova subida a partir de 2011. Durante todo o período analisado, o semestre com mais encontros foi o `r meet_semesters$semesters[1]`, com `r max(meet_semesters$meetings)` encontros, e aqueles com menos encontros foram `r meet_semesters$semesters[nrow(meet_semesters)]` e `r meet_semesters$semesters[nrow(meet_semesters)-1]`, ambos com `r min(meet_semesters$meetings)` encontros.
 
-## Tópicos mais debatidos
+# Tópicos mais debatidos
 
 O CSNU também não possui uma agenda fixa sobre os temas que irá debater. O Presidente do CSNU, posição ocupada por um dos 15 membros de forma rotativa mensamelmente, define os tópicos a serem debatidos no mês, em diálogo com os demais membros. Isso quer dizer que analisar os tópicos mais debatidos pelo CSNU pode nos dar uma ideia sobre quais crises internacionais mais chamam a atenção de seus membros. O gráfico \@ref(fig:top-topics) apresenta os 10 tópicos mais debatidos em encontros do CSNU, considerando todo o período entre 1995 e 2019:
 
-```{r top-topics, echo=F, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Tópicos com mais encontros", fig.topcaption=TRUE}
-# Tópicos mais debatidos
+```{r top-topics, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Tópicos com mais encontros", fig.topcaption=TRUE}
 
-top_topics <- unsc_full_filt %>% # plotar tópicos mais debatidos
-  select(spv, topics) %>%
-  unique() %>%
-  count(topics) %>%
+# Objeto em que cada linha é um tópico
+top_topics <- unsc_full_filt %>% 
+  select(spv, topics) %>% # tópicos e respectivos encontros
+  unique() %>% # remover duplicatas
+  count(topics) %>% # frequência de tópicos
   arrange(desc(n)) %>% 
   slice(1:10) 
 
+# plot ordenado dos 10 tópicos mais frequentes
 top_topics %>% 
   ggplot(aes(reorder(topics, n), n)) +
   geom_bar(stat = "identity") +
@@ -111,24 +110,28 @@ top_topics %>%
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
 ```
 
-No gráfico \@ref(fig:top-topics), vemos que, considerando todo o período e incluindo tópicos temáticos, o tópico que mais gerou encontros no CSNU versou sobre o conflito XXX, com XXX encontros. Por outro lado, e desconsiderando tópicos temáticos para focarmos naqueles geograficamente localizáveis, a tabela \@ref(tab:top-topics-ano) mostra que, ao longo dos anos, podemos notar que as emergências principais variam. Vemos a importância dos conflitos no Leste Europeu em 1995 e 1996, as crises envolvendo Iraque em 1997 e 2003, os conflitos no Sudão, especialmente após 2010, com a independência do Sudão do Sul, e a crise na Síria mais recentemente. 
+No gráfico \@ref(fig:top-topics), vemos que, considerando todo o período e incluindo tópicos temáticos, o tópico que mais gerou encontros no CSNU versou sobre o conflito `r top_topics$topics[1]`, com `r max(top_topics$n)` encontros. Por outro lado, e desconsiderando tópicos temáticos para focarmos naqueles geograficamente localizáveis, a tabela \@ref(tab:top-topics-ano) mostra que, ao longo dos anos, as emergências principais variam. Vemos a importância dos conflitos no Leste Europeu em 1995 e 1996, as crises envolvendo o Iraque em 1997 e 2003, os conflitos no Sudão, especialmente após 2010 com a independência do Sudão do Sul, e a crise na Síria mais recentemente. 
 
-```{r top-topics-ano, echo=F, fig.align='center', warning=FALSE, message=FALSE}
+```{r top-topics-ano, fig.align='center', warning=FALSE, message=FALSE}
 
-# Tópico mais debatido em cada ano
-
+# Objeto em que cada linha possui os dois tópicos
+# mais frequentes em um ano
 top_topics_ano <- unsc_full_filt %>% 
-   filter(agenda_item3 != "Thematic") %>%
-   select(agenda_item3, spv, date) %>%
-   unique() %>% 
-   mutate(year = as.character(year(date))) %>%
+   filter(agenda_item3 != "Thematic") %>% # remover temáticos
+   select(agenda_item3, spv, date) %>% 
+   unique() %>% # remover duplicatas
+   mutate(year = as.character(year(date))) %>% # manter apenas ano
    group_by(year, agenda_item3) %>% 
-   summarise(n = n()) %>% 
+   summarise(n = n()) %>% # frequência de tópicos por ano
    arrange(year, desc(n)) %>% 
    slice(1:2) %>% 
-   mutate(ranking = c(1, 2)) %>% 
+   mutate(ranking = c(1, 2)) %>% # indicar primeiros e segundos
+# tópicos mais adotados
    pivot_wider(names_from = ranking, values_from = c(agenda_item3, n)) 
+# criar colunas específicas para primeiros e segundos tópicos
 
+# tabela em que cada linha é um ano
+# com indicação dos primeiros e segundos tópicos mais adotados
 top_topics_ano %>%
   relocate(n_1, .after = agenda_item3_1) %>% 
   knitr::kable(caption = "Tópicos com mais encontros por ano",
@@ -140,26 +143,28 @@ top_topics_ano %>%
                      "Maior número de encontros" = 2,
                      "Segundo maior número de encontros" = 2)) %>% 
   kable_styling(latex_options = "HOLD_position")
-
 ```
 
-## Membros que mais participaram no CSNU
+# Membros que mais participaram no CSNU
 
 Os membros do CSNU, mesmo que ocupem assentos, não são obrigados a fazer pronunciamentos durante as reuniões, de modo que há variação no nível de engajamento nos debates. Nesta seção, avaliamos o nível de participação dos membros levando em conta o número de discursos proferidos em capacidade nacional ou em nome de órgão da ONU, excluindo discursos protocolares. No gráfico \@ref(fig:top-disc), podemos visualizar os membros que mais discursaram no CSNU entre 1995 e 2019: 
 
-```{r top-disc, echo=F, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Membros que mais discursaram", fig.topcaption=TRUE}
+```{r top-disc, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Membros que mais discursaram", fig.topcaption=TRUE}
 
+# remover discursos não feitos em capacidade nacional
 unsc_nat <- unsc_full_filt %>% 
    filter(!(participanttype == "The President" &
               !filename %in% c(un_capacities_speeches,
                                national_capacities_filenames)))
 
+# objeto em que cada linha é um país
 top_disc <- unsc_nat %>% 
   group_by(country) %>%
-  summarise(discourses = n()) %>% 
+  summarise(discourses = n()) %>% # calcular número de discursos
   arrange(desc(discourses)) %>% 
   slice(1:10) 
 
+# plot ordenado com os 10 países que mais discursaram
 top_disc %>% 
   ggplot(aes(reorder(country, discourses), discourses)) +
   geom_bar(stat = "identity") +
@@ -167,13 +172,13 @@ top_disc %>%
   theme_bw() +
   labs(x = NULL,
        y = NULL)
-
 ```
 
-Na primeira posição está a XXX, que proferiu XXX discursos. Os pronunciamentos da ONU são feitos por seus agentes oficiais, que apresentam, por exemplo, relatórios sobre missões. Logo abaixo da ONU, podemos observar os cinco membros permanentes. Para concluir, vamos voltar nosso olhar à América do Sul, para verificar a participação dos países sulamericanos no CSNU. No mapa \@ref(fig:map-south), podemos visualizar o número de discursos de todos os países sulamericanos:
+Na primeira posição está a `r top_disc$country[1]`, que proferiu `r max(top_disc$discourses)` discursos. Os pronunciamentos da ONU são feitos por seus agentes oficiais, que apresentam, por exemplo, relatórios sobre missões. Logo abaixo da ONU, podemos observar os cinco membros permanentes. Para concluir, vamos voltar nosso olhar à América do Sul, para verificar a participação dos países sul-americanos no CSNU. Na figura \@ref(fig:map-south), podemos visualizar um mapa com o número de discursos de todos os países sul-americanos:
 
-```{r map-south, echo=F, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Número de discursos dos países da América do Sul", fig.topcaption=TRUE}
+```{r map-south, fig.align='center', warning=FALSE, message=FALSE, fig.cap="Número de discursos dos países da América do Sul", fig.topcaption=TRUE}
 
+# importar shapefile apenas com países da América do Sul
 world <- st_as_sf(map("world", plot = FALSE, fill = TRUE)) %>% 
   filter(ID %in% c("Brazil",
                    "Chile",
@@ -189,21 +194,38 @@ world <- st_as_sf(map("world", plot = FALSE, fill = TRUE)) %>%
                    "Colombia",
                    "Suriname"))
 
+# Objeto em que cada linha é um país
 n_discourses <- unsc_nat %>% 
   group_by(country) %>%
   summarise(discourses = n())
 
+# Unir shapefile com informações sobre número de discursos dos países
 world <- world %>% 
   left_join(n_discourses, by = c("ID" = "country")) 
 
+# Objeto em que cada linha é um país
+# Necessário para inserir códigos embutidos no texto
+top_south_amer <- world %>% 
+  tibble() %>% 
+  select(ID, discourses) %>% 
+  mutate(ID = recode(ID, 
+                     "Brazil" = "Brasil",
+                     "French Guiana" = "Guiana Francesa",
+                     "Guyana" = "Guiana"),
+         discourses = replace_na(discourses, 0)) %>% 
+  arrange(desc(discourses)) 
+  
+# Mapa da América do Sul, com números de discursos totais dos países
 world %>% ggplot() +
   geom_sf(aes(fill=discourses), color= "black", size=.05) +
   coord_sf(xlim = c(-85, -30), ylim = c(-60, 15), expand = FALSE) +
   scale_fill_distiller(palette = "PuBuGn",
                        name = NULL,
-                       limits = c(min(world$discourses),max(world$discourses))) +
+                       limits = c(min(world$discourses),
+                                  max(world$discourses))) + 
+# limites da legendo definidos a partir dos dados
   theme_void()
 
 ```
 
-Na América do Sul, os países que mais discursaram no CSNU foram XXX e XXX, ambos com XXX discursos. Em terceiro lugar, com XXX discursos, está o XXX. Os países que menos participaram foram XXX e XXX, com respectivamente XXX e XXX discursos. A Guiana Francesa, por ser uma região ultramarina da França, não possui representação própria na ONU e por isso não participa dos encontros do CSNU.
+Na América do Sul, os países que mais discursaram no CSNU foram `r top_south_amer$ID[1]` e `r top_south_amer$ID[2]`, ambos com `r top_south_amer$discourses[1]` discursos. Em terceiro lugar, com `r top_south_amer$discourses[3]` discursos, está o `r top_south_amer$ID[3]`. Os países que menos participaram foram `r top_south_amer$ID[nrow(top_south_amer)]`, `r top_south_amer$ID[nrow(top_south_amer)-1]` e `r top_south_amer$ID[nrow(top_south_amer)-2]`, com respectivamente `r top_south_amer$discourses[nrow(top_south_amer)]`, `r top_south_amer$discourses[nrow(top_south_amer)-1]` e `r top_south_amer$discourses[nrow(top_south_amer)-2]` discursos. A Guiana Francesa, por ser uma região ultramarina da França, não possui representação própria na ONU e por isso não participa dos encontros do CSNU.

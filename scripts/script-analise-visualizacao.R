@@ -1,5 +1,6 @@
 # Amostra de Script - Análise e Visualização
 
+# Pacotes para análise e visualização
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -7,57 +8,75 @@ library(scales)
 library(sf)
 library(maps)
 
-load(here("data/unsc_full.RData"))
+# Carregar banco de dados pré-processado
+load(here("data/unsc_full_filt.RData")) 
 
-## Número de encontros ao longo do tempo - Linha
+# Carregar vetores com códigos dos discursos nacionais
+load(here("data/un_capacities_speeches.RData"))
+load(here("data/national_capacities_filenames.RData"))
 
-unsc_full %>% 
-  select(date, spv) %>% # seleção das variáveis necessárias
-  unique() %>% # remoção das duplicatas
+#### Número de encontros ao longo do tempo - Linha ####
+
+# Objeto em que cada linha é um encontro
+meet_semesters <- unsc_full_filt %>% 
+  select(date, spv) %>% # encontros e suas datas
+  unique() %>% # remover duplicatas
   mutate(semesters = as.character(semester(date, with_year = TRUE))) %>% # conversão para semestres
   group_by(semesters) %>% 
-  summarise(meetings = n()) %>% # número de encontros por semestre
-  ggplot(aes(semesters, meetings, group = 1)) + # plot da evolução do número de encontros
+  summarise(meetings = n()) %>%  # número de encontros por semestre
+  arrange(desc(meetings))
+
+# plot da evolução do número de encontros
+meet_semesters %>% 
+  ggplot(aes(semesters, meetings, group = 1)) + 
   geom_line() +
-  labs(x = "Semestres",
-       y = NULL,
-       title = "Número de Encontros no CSNU (1995-2019)") +
+  labs(x = NULL,
+       y = NULL) +
   geom_smooth(se = F) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 65,
                                    hjust = 1,
                                    vjust = 1))
 
-## Tópicos com mais encontros - Barras
+#### Tópicos com mais encontros - Barras ####
 
-unsc_full %>% # plotar tópicos mais debatidos
-  select(spv, topics) %>%
-  unique() %>%
-  count(topics) %>%
+# Objeto em que cada linha é um tópico
+top_topics <- unsc_full_filt %>% 
+  select(spv, topics) %>% # tópicos e respectivos encontros
+  unique() %>% # remover duplicatas
+  count(topics) %>% # frequência de tópicos
   arrange(desc(n)) %>% 
-  slice(1:10) %>%
+  slice(1:10) 
+
+# plot ordenado dos 10 tópicos mais frequentes
+top_topics %>% 
   ggplot(aes(reorder(topics, n), n)) +
   geom_bar(stat = "identity") +
   coord_flip() +
   theme_bw() +
-  labs(x = NULL, y = NULL, title = "Tópicos com mais encontros") +
+  labs(x = NULL, 
+       y = NULL) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
 
-## Tópicos com mais encontros por ano - Tabela
+#### Tópicos com mais encontros por ano - Tabela ####
 
-top_topicos_ano <- unsc_full %>% 
-  filter(agenda_item3 != "Thematic") %>%
-  select(agenda_item3, spv, date) %>%
-  unique() %>% 
-  mutate(year = as.character(year(date))) %>%
+# Objeto em que cada linha possui os dois tópicos  mais frequentes em um ano
+
+top_topics_ano <- unsc_full_filt %>% 
+  filter(agenda_item3 != "Thematic") %>% # remover temáticos
+  select(agenda_item3, spv, date) %>% 
+  unique() %>% # remover duplicatas
+  mutate(year = as.character(year(date))) %>% # manter apenas ano
   group_by(year, agenda_item3) %>% 
-  summarise(n = n()) %>% 
+  summarise(n = n()) %>% # frequência de tópicos por ano
   arrange(year, desc(n)) %>% 
   slice(1:2) %>% 
-  mutate(ranking = c(1, 2)) %>% 
-  pivot_wider(names_from = ranking, values_from = c(agenda_item3, n)) 
+  mutate(ranking = c(1, 2)) %>% # indicar primeiros e segundos tópicos mais adotados
+  pivot_wider(names_from = ranking, values_from = c(agenda_item3, n)) # criar colunas específicas para primeiros e segundos tópicos
 
-top_topicos_ano %>%
+# tabela em que cada linha é um ano com indicação dos primeiros e segundos tópicos mais adotados
+
+top_topics_ano %>%
   relocate(n_1, .after = agenda_item3_1) %>% 
   knitr::kable(caption = "Tópicos com mais encontros por ano",
                col.names = c("", "", "", "", ""),
@@ -66,39 +85,38 @@ top_topicos_ano %>%
   column_spec(4, border_left = T, border_right = F) %>%
   add_header_above(c(" " = 1,
                      "Maior número de encontros" = 2,
-                     "Segundo maior número de encontros" = 2))
+                     "Segundo maior número de encontros" = 2)) %>% 
+  kable_styling(latex_options = "HOLD_position")
 
-## Membros com mais discursos
+#### Membros com mais discursos ####
 
-# Remover discursos não proferidos em capacidade nacional
-
-load(here("data/un_capacities_speeches.RData"))
-load(here("data/national_capacities_filenames.RData"))
-
-unsc_filt <- unsc_full %>% 
+# remover discursos não feitos em capacidade nacional
+unsc_nat <- unsc_full_filt %>% 
   filter(!(participanttype == "The President" &
              !filename %in% c(un_capacities_speeches,
                               national_capacities_filenames)))
 
-# Membros que mais discursaram - Barras
-
-unsc_filt %>% 
+# objeto em que cada linha é um país
+top_disc <- unsc_nat %>% 
   group_by(country) %>%
-  summarise(discourses = n()) %>% 
+  summarise(discourses = n()) %>% # calcular número de discursos
   arrange(desc(discourses)) %>% 
-  slice(1:10) %>% 
+  slice(1:10) 
+
+# plot ordenado com os 10 países que mais discursaram
+top_disc %>% 
   ggplot(aes(reorder(country, discourses), discourses)) +
   geom_bar(stat = "identity") +
   coord_flip() +
   theme_bw() +
   labs(x = NULL,
-       y = "Número de discursos",
-       title = "Membros que mais discursaram")
+       y = NULL)
 
-### Mapa América do Sul
+#### Mapa América do Sul ####
 
 # Carregar mapa filtrado para América do Sul
 
+# importar shapefile apenas com países da América do Sul
 world <- st_as_sf(map("world", plot = FALSE, fill = TRUE)) %>% 
   filter(ID %in% c("Brazil",
                    "Chile",
@@ -114,23 +132,33 @@ world <- st_as_sf(map("world", plot = FALSE, fill = TRUE)) %>%
                    "Colombia",
                    "Suriname"))
 
-# Unir dados do mapa com número de discursos dos países, mantendo variável "ID" para a visualização
-
-n_discourses <- unsc_filt %>% 
+# Objeto em que cada linha é um país
+n_discourses <- unsc_nat %>% 
   group_by(country) %>%
   summarise(discourses = n())
 
+# Unir shapefile com informações sobre número de discursos dos países
 world <- world %>% 
-  left_join(n_discourses, by = c("ID" = "country"))  
+  left_join(n_discourses, by = c("ID" = "country")) 
 
-# Gerar visualização
+# Objeto em que cada linha é um país. Necessário para inserir códigos embutidos no texto
+top_south_amer <- world %>% 
+  tibble() %>% 
+  select(ID, discourses) %>% 
+  mutate(ID = recode(ID, 
+                     "Brazil" = "Brasil",
+                     "French Guiana" = "Guiana Francesa",
+                     "Guyana" = "Guiana"),
+         discourses = replace_na(discourses, 0)) %>% 
+  arrange(desc(discourses)) 
 
+# Mapa da América do Sul, com números de discursos totais dos países
 world %>% ggplot() +
   geom_sf(aes(fill=discourses), color= "black", size=.05) +
   coord_sf(xlim = c(-85, -30), ylim = c(-60, 15), expand = FALSE) +
   scale_fill_distiller(palette = "PuBuGn",
                        name = NULL,
-                       limits = c(min(world$discourses),max(world$discourses))) +
-  theme_void() +
-  labs(title = "Número de discursos dos países da América do Sul")
+                       limits = c(min(world$discourses),
+                                  max(world$discourses))) + # limites da legendo definidos a partir dos dados
+  theme_void()
 

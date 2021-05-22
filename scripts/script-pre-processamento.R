@@ -1,5 +1,6 @@
 # Amostra de Script - Pré-processamento dos dados
 
+# Pacotes para pré-processamento
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -49,29 +50,7 @@ unsc_full_filt <- unsc_full %>%
 # Análises mais extensas demandariam a tradução de todos os nomes com ajuda do pacote "countrycode"
 
 unsc_full_filt <- unsc_full_filt %>% 
-  mutate(topics = recode(topics,
-                         "Somalia" = "Somália",
-                         "Sudan/South Sudan" = "Sudão/Sudão do Sul",
-                         "Democratic Republic of the Congo" = "República Democrática do Congo",
-                         "Israel/Palestine" = "Israel/Palestina",
-                         "Afghanistan" = "Afeganistão",
-                         "Syria" = "Síria",
-                         "Sudan" = "Sudão",
-                         "Terrorism" = "Terrorismo",
-                         "Côte d'Ivoire" = "Costa do Marfim"),
-         country = recode(country,
-                          "United Kingdom Of Great Britain And Northern Ireland" = "Reino Unido",
-                          "United States Of America" = "Estados Unidos",
-                          "France" = "França",
-                          "Russian Federation" = "Rússia",
-                          "UN" = "ONU",
-                          "Japan" = "Japão",
-                          "EU" = "União Europeia",
-                          "Germany" = "Alemanha",
-                          "South Africa" = "África do Sul",
-                          "Bolivia (Plurinational State Of)" = "Bolivia",
-                          "Venezuela (Bolivarian Republic Of)" = "Venezuela"),
-         agenda_item3 = recode(agenda_item3,
+  mutate(agenda_item3 = recode(agenda_item3,
                                "Afghanistan" = "Afeganistão",
                                "Bosnia and Herzegovina" = "Bósnia e Herzegovina",
                                "Côte d'Ivoire" = "Costa do Marfim",
@@ -84,7 +63,30 @@ unsc_full_filt <- unsc_full_filt %>%
                                "Sudan" = "Sudão",
                                "Sudan/South Sudan" = "Sudão/Sudão do Sul",
                                "Syria" = "Síria",
-                               "Ukraine" = "Ucrânia"))
+                               "Ukraine" = "Ucrânia"),
+         country = recode(country,
+                          "Bolivia (Plurinational State Of)" = "Bolivia",
+                          "EU" = "União Europeia",
+                          "France" = "França",
+                          "Germany" = "Alemanha",
+                          "Japan" = "Japão",
+                          "Russian Federation" = "Rússia",
+                          "South Africa" = "África do Sul",
+                          "UN" = "ONU",
+                          "United Kingdom Of Great Britain And Northern Ireland" = "Reino Unido",
+                          "United States Of America" = "Estados Unidos",
+                          "Venezuela (Bolivarian Republic Of)" = "Venezuela"),
+         topics = recode(topics,
+                         "Afghanistan" = "Afeganistão",
+                         "Côte d'Ivoire" = "Costa do Marfim",
+                         "Democratic Republic of the Congo" = "República Democrática do Congo",
+                         "Israel/Palestine" = "Israel/Palestina",
+                         "Somalia" = "Somália",
+                         "Sudan" = "Sudão",
+                         "Sudan/South Sudan" = "Sudão/Sudão do Sul",
+                         "Syria" = "Síria",
+                         "Terrorism" = "Terrorismo"))
 
-save(unsc_full_filt, file = here("data/unsc_full_filt.RData"))
+# Salvar base de dados filtrada
+#save(unsc_full_filt, file = here("data/unsc_full_filt.RData"))
 
