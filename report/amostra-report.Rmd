@@ -29,9 +29,9 @@ knitr::opts_chunk$set(echo = TRUE, fig.pos = 'H')
 
 # Apresentação do Projeto
 
-Este relatório é resultado de um projeto estruturado no R que analisa a atividade do Conselho de Segurança das Nações Unidas (CSNU), a partir da base de dados "_UN Security Council Debates_", disponível no _Harvard Dataverse_^[Disponível em: [https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH). Acesso em: 20 de maio de 2021. Uma versão atualizada do banco de dados está disponível em: [https://osf.io/2x38t/](https://osf.io/2x38t/). Acesso em: 20 de maio de 2021.], que contém 77.857 discursos proferidos no CSNU entre 1995 e 2019. A pasta raiz do projeto possui uma pasta "_data_", com a base de dados em formato .RData, uma pasta "_scripts_", com registro dos códigos utilizados na análise de dados, e, por fim, uma pasta "_report_", com um arquivo .RMD para gerar o presente relatório em PDF, onde é possível visualizar os códigos que geraram as análises. Caso fosse desejável visualizar apenas os textos e os gráficos, bastaria modificar o parâmetro dos _chunks_ para `echo = FALSE`. Dessa forma, temos como processar e registrar, em um só local, a preparação e análise dos dados e a apresentação dos resultados. O controle de versão em [repositório no Github](https://github.com/antonio-henrique-pires/fgv-amostra-trabalho) garante a transparência e a replicabilidade, uma vez que permite o acesso de outras pessoas aos arquivos e registros necessários para a realização das análises. 
+Este relatório é resultado de um projeto estruturado no R que analisa a atividade do Conselho de Segurança das Nações Unidas (CSNU), a partir da base de dados "_UN Security Council Debates_"^[Disponível em: [https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KGVSYH). Acesso em: 23 de maio de 2021. Uma versão atualizada do banco de dados está disponível em: [https://osf.io/2x38t/](https://osf.io/2x38t/). Acesso em: 23 de maio de 2021.], que contém 77.857 discursos proferidos no CSNU entre 1995 e 2019. A pasta raiz do projeto possui uma pasta "_data_", com a base de dados em formato .RData, uma pasta "_scripts_", com registro dos códigos utilizados na análise de dados, e, por fim, uma pasta "_report_", com um arquivo .RMD para gerar o presente relatório em PDF, onde é possível visualizar os códigos que geraram as análises. Dessa forma, processamos e registramos, em um só local, a preparação e análise dos dados e a apresentação dos resultados. Caso fosse desejável visualizar apenas os textos e as figuras, bastaria modificar o parâmetro dos _chunks_ para `echo = FALSE`. Além disso, o controle de versão em [repositório no Github](https://github.com/antonio-henrique-pires/fgv-amostra-trabalho) garante a transparência e a replicabilidade, uma vez que permite o acesso de outras pessoas aos arquivos e registros necessários para a realização das análises. 
 
-Tema central deste projeto, o CSNU é formado por representantes de 15 países, sendo 5 membros permanentes (China, França, Rússia, Reino Unido e Estados Unidos) e 10 eleitos para mandatos de 2 anos, que se reúnem para discutir assuntos relativos à manutenção da paz e da segurança internacional. Neste relatório, analisamos a frequência de encontros realizados pelo CSNU ao longo do tempo, quais os assuntos e as crises internacionais que mais foram objeto de reuniões e, por fim, identificamos quais os membros que mais discursaram no CSNU.
+Tema central deste projeto, o CSNU é formado por representantes de 15 países, sendo 5 membros permanentes (China, Estados Unidos, França, Reino Unido e Rússia) e 10 eleitos para mandatos de 2 anos, que se reúnem para discutir assuntos relativos à manutenção da paz e da segurança internacional. Neste relatório, analisamos a frequência de encontros realizados pelo CSNU ao longo do tempo, quais os assuntos e as crises internacionais que mais foram objeto de reuniões e, por fim, identificamos quais os membros que mais discursaram no CSNU.
 
 ```{r pck-data, warning=FALSE, message=FALSE}
 # Pacotes para análise e visualização
@@ -47,7 +47,8 @@ library(knitr)
 # Carregar banco de dados pré-processado
 load(here("data/unsc_full_filt.RData")) 
 
-# Carregar vetores com códigos dos discursos nacionais
+# Carregar vetores com códigos dos discursos
+# proferidos em capacidade nacional e em nome de órgão da ONU
 load(here("data/un_capacities_speeches.RData"))
 load(here("data/national_capacities_filenames.RData"))
 
@@ -55,7 +56,7 @@ load(here("data/national_capacities_filenames.RData"))
 
 # Frequência de encontros
 
-Os encontros do CSNU podem ser convocados a qualquer tempo, sem limite mínimo ou máximo. No gráfico \@ref(fig:encontros-semestre), podemos visualizar a evolução no número de encontros realizados pelo CSNU a partir de 1995, considerando intervalos semestrais, para maior detalhamento:
+Os encontros do CSNU podem ser convocados a qualquer tempo, sem limite mínimo ou máximo. Na figura \@ref(fig:encontros-semestre), podemos visualizar a evolução no número de encontros realizados pelo CSNU a partir de 1995, considerando intervalos semestrais, para maior detalhamento:
 
 ```{r encontros-semestre, fig.align='center', warning=FALSE, message=FALSE, fig.cap="Número de Encontros no CSNU (1995-2019)", fig.topcaption=TRUE}
 
@@ -87,7 +88,7 @@ Podemos notar que o CSNU se tornou cada vez mais ativo ao longo do tempo. Nota-s
 
 # Tópicos mais debatidos
 
-O CSNU também não possui uma agenda fixa sobre os temas que irá debater. O Presidente do CSNU, posição ocupada por um dos 15 membros de forma rotativa mensamelmente, define os tópicos a serem debatidos no mês, em diálogo com os demais membros. Isso quer dizer que analisar os tópicos mais debatidos pelo CSNU pode nos dar uma ideia sobre quais crises internacionais mais chamam a atenção de seus membros. O gráfico \@ref(fig:top-topics) apresenta os 10 tópicos mais debatidos em encontros do CSNU, considerando todo o período entre 1995 e 2019:
+O CSNU também não possui uma agenda fixa sobre os temas que irá debater. O Presidente do CSNU, posição ocupada por um dos 15 membros de forma rotativa mensalmente, define os tópicos a serem debatidos no mês, em diálogo com os demais membros. Isso quer dizer que analisar os tópicos mais debatidos pelo CSNU pode nos dar uma ideia sobre quais crises internacionais mais chamam a atenção de seus membros. A figura \@ref(fig:top-topics) apresenta os 10 tópicos mais debatidos em encontros do CSNU, considerando todo o período entre 1995 e 2019:
 
 ```{r top-topics, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Tópicos com mais encontros", fig.topcaption=TRUE}
 
@@ -110,7 +111,7 @@ top_topics %>%
   scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
 ```
 
-No gráfico \@ref(fig:top-topics), vemos que, considerando todo o período e incluindo tópicos temáticos, o tópico que mais gerou encontros no CSNU versou sobre o conflito `r top_topics$topics[1]`, com `r max(top_topics$n)` encontros. Por outro lado, e desconsiderando tópicos temáticos para focarmos naqueles geograficamente localizáveis, a tabela \@ref(tab:top-topics-ano) mostra que, ao longo dos anos, as emergências principais variam. Vemos a importância dos conflitos no Leste Europeu em 1995 e 1996, as crises envolvendo o Iraque em 1997 e 2003, os conflitos no Sudão, especialmente após 2010 com a independência do Sudão do Sul, e a crise na Síria mais recentemente. 
+Na figura \@ref(fig:top-topics), vemos que, considerando todo o período e incluindo tópicos temáticos, o tópico que mais gerou encontros no CSNU versou sobre o conflito `r top_topics$topics[1]`, com `r max(top_topics$n)` encontros. Por outro lado, e desconsiderando tópicos temáticos para focarmos naqueles geograficamente localizáveis, a tabela \@ref(tab:top-topics-ano) mostra que, ao longo dos anos, as emergências principais variaram. Vemos a importância dos conflitos no Leste Europeu em 1995 e 1996, as crises envolvendo o Iraque em 1997 e 2003, os conflitos no Sudão, especialmente após 2010 com a independência do Sudão do Sul, e a crise na Síria mais recentemente. 
 
 ```{r top-topics-ano, fig.align='center', warning=FALSE, message=FALSE}
 
@@ -145,9 +146,9 @@ top_topics_ano %>%
   kable_styling(latex_options = "HOLD_position")
 ```
 
-# Membros que mais participaram no CSNU
+# Membros que mais participaram
 
-Os membros do CSNU, mesmo que ocupem assentos, não são obrigados a fazer pronunciamentos durante as reuniões, de modo que há variação no nível de engajamento nos debates. Nesta seção, avaliamos o nível de participação dos membros a partir do número de discursos proferidos em capacidade nacional ou em nome de órgão da ONU. Não levamos em conta, portanto, discursos proferidos na condição de Presidente do Conselho com conteúdos protocolares, do tipo "passo agora a palavra ao representante X", ou que apresentam "Declarações Presidenciais", que representam todo o Conselho, em vez de um ator específico. No gráfico \@ref(fig:top-disc), podemos visualizar os membros que mais discursaram no CSNU entre 1995 e 2019: 
+Os membros do CSNU, mesmo que ocupem assentos, não são obrigados a fazer pronunciamentos durante as reuniões, de modo que há variação no nível de engajamento nos debates. Nesta seção, avaliamos o nível de participação dos membros a partir do número de discursos proferidos em capacidade nacional ou em nome de órgão da ONU. Não levamos em conta, portanto, discursos proferidos na condição de Presidente do Conselho com conteúdos protocolares, do tipo "passo agora a palavra ao representante X", ou que apresentam "Declarações Presidenciais", que representam todo o Conselho, em vez de um ator específico. Na figura \@ref(fig:top-disc), podemos visualizar os membros que mais discursaram no CSNU entre 1995 e 2019: 
 
 ```{r top-disc, fig.align='center', warning=FALSE, message=FALSE, fig.cap = "Membros que mais discursaram", fig.topcaption=TRUE}
 
@@ -224,7 +225,7 @@ world %>% ggplot() +
                        name = NULL,
                        limits = c(min(world$discourses),
                                   max(world$discourses))) + 
-# limites da legendo definidos a partir dos dados
+# limites da legenda definidos a partir dos dados
   theme_void()
 
 ```
