@@ -1,4 +1,4 @@
-# Amostra de Script - Análise e Visualização
+# ETAPA 2 - ANÁLISE E VISUALIZAÇÃO
 
 # Pacotes para análise e visualização
 library(tidyverse)

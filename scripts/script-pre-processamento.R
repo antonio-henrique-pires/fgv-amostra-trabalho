@@ -1,4 +1,4 @@
-# Amostra de Script - Pré-processamento dos dados
+# ETAPA 1 - PRÉ-PROCESSAMENTO DOS DADOS
 
 # Pacotes para pré-processamento
 library(tidyverse)
