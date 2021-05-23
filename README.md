@@ -1,2 +1,2 @@
 # fgv-amostra-trabalho
-Amostra de trabalho para vaga de Analista de Dados Quantitativos
+Amostra de trabalho sobre o Conselho de Segurança das Nações Unidas
