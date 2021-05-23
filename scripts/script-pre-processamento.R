@@ -35,12 +35,12 @@ unsc_full_filt <- unsc_full %>%
 
 # Os arquivos "un_capacities_speeches" e "national_capacities_filenames" possuem os códigos de todos os discursos proferidos por Presidentes
 # do Conselho em capacidade nacional ou enquanto funcionário da ONU
-# Por ser uma etapa simples, este código poderá ser rodado direto no RMD
+# Por ser uma etapa simples, este código poderá ser rodado direto na etapa de análise e no RMD
 
 #load(here("data/un_capacities_speeches.RData"))
 #load(here("data/national_capacities_filenames.RData"))
 
-#unsc_filt <- unsc_full %>% 
+#unsc_nat <- unsc_full_filt %>% 
 #  filter(!(participanttype == "The President" &
 #             !filename %in% c(un_capacities_speeches,
 #                              national_capacities_filenames)))
@@ -91,5 +91,5 @@ unsc_full_filt <- unsc_full_filt %>%
 
 #### Salvar base de dados filtrada ####
 
-#save(unsc_full_filt, file = here("data/unsc_full_filt.RData"))
+#save(unsc_full_filt, file = here("data/unsc_full_filt.RData")) # Base já salva na pasta data
 

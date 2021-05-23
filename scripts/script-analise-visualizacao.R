@@ -7,6 +7,7 @@ library(lubridate)
 library(scales)
 library(sf)
 library(maps)
+library(kableExtra)
 
 # Carregar banco de dados pré-processado
 load(here("data/unsc_full_filt.RData")) 
